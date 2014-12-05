@@ -1,0 +1,17 @@
+{
+  "name": "jpm",
+  "id": "@jpm",
+  "version": "0.0.1",
+  "description": "Jetpack Mechanic utilities for creating, testing, running and packaging Mozilla Jetpack Addons",
+  "homepage": "https://github.com/mozilla/jpm",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mozilla/jpm.git"
+  },
+  "dependencies": {
+    "jetpack-id": "0.0.4",
+    "mozilla-toolkit-versioning": "0.0.2"
+  },
+  "author": "Irakli Gozalishvili",
+  "license": "MPL v2.0"
+}
