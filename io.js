@@ -34,6 +34,28 @@ const list = directory => Task.spawn(function*(){
 });
 exports.list = list;
 
+const listTree = (directory, options={includeDirectories:true}) =>
+  Task.spawn(function*() {
+    const {includeDirectories} = options;
+    const entries = yield list(directory);
+    const result = [];
+    for (let entry of entries) {
+      if (yield isDirectory(entry)) {
+        if (includeDirectories) {
+          result.push(entry);
+        }
+
+        let nested = yield listTree(entry, options);
+        result.push(...nested);
+      }
+      else {
+        result.push(entry);
+      }
+    }
+    return result
+  });
+exports.listTree = listTree
+
 const read = path => File.read(path);
 exports.read = read;
 

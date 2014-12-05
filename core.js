@@ -6,7 +6,7 @@ const { fromFilename: toFileURI } = require("sdk/url");
 const { ZipWriter } = require("./zip");
 const { readManifest } = require("./rdf");
 const { writeBootstrap } = require("./util");
-const { read, remove, isDirectory, exists, list, uriToPath } = require("./io");
+const { read, remove, isDirectory, exists, list, listTree, uriToPath } = require("./io");
 const { TextDecoder } = require("sdk/io/buffer");
 const { tmpdir } = require("node/os");
 const { install, disable, enable } = require("sdk/addon/installer");
@@ -142,21 +142,28 @@ const exportAddon = {
     return Task.spawn(function*() {
       const mountURI = get(`extensions.${addon.id}.mountURI`)
       if (mountURI) {
-        const mountPath = uriToPath(mountURI);
-        const manifestData = yield read(path.join(mountPath, "package.json"));
+        const root = uriToPath(mountURI);
+        const manifestData = yield read(path.join(root, "package.json"));
         const decoder = new TextDecoder();
         const manifest = JSON.parse(decoder.decode(manifestData));
         console.log(manifest)
         const rdf = readManifest(manifest);
         console.log(rdf)
-        const bootstrap = writeBootstrap(mountURI, manifest);
+        const bootstrap = writeBootstrap("", manifest);
         const xpiPath = `${targetPath}/${manifest.name}.xpi`
 
-        const zip = new ZipWriter({
+        const content = {
           "bootstrap.js": new ZipWriter.StringDataEntry(bootstrap),
           "install.rdf": new ZipWriter.StringDataEntry(rdf)
-        });
+        };
 
+        const entries = yield listTree(root, {includeDirectories: false});
+        for (let entry of entries) {
+          content[`src/${path.relative(root, entry)}`] = new ZipWriter.FileEntry(entry);
+        }
+
+        console.log(content);
+        const zip = new ZipWriter(content);
         yield zip.write(xpiPath);
       } else {
         throw Error("Only mounted add-ons can be exported");

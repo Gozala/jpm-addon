@@ -103,22 +103,26 @@ function Bootstrap(mountURI) {
 Bootstrap.prototype = {
   constructor: Bootstrap,
   install(addon, reason) {
-    prefService.setCharPref(`extensions.${addon.id}.mountURI`, this.mountURI);
+    if (this.mountURI) {
+      prefService.setCharPref(`extensions.${addon.id}.mountURI`, this.mountURI);
+    }
   },
   uninstall(addon, reason) {
-    prefService.clearUserPref(`extensions.${addon.id}.mountURI`);
+    if (this.mountURI) {
+      prefService.clearUserPref(`extensions.${addon.id}.mountURI`);
+    }
   },
   startup(addon, reasonCode) {
     console.log("startup");
-    const mountURI = this.mountURI;
+    const { id, version, resourceURI: {spec: rootURI} } = addon;
+    const mountURI = this.mountURI || `${rootURI}src/`;
     const reason = REASON[reasonCode];
-    const { id, version, resourceURI: { spec: rootURI } } = addon;
     const loadCommand = exists("CFX_COMMAND") ?
                           get("CFX_COMMAND") :
                           getPref("extensions." + id + ".sdk.load.command", undefined);
 
     try {
-      const metadata = require(`${mountURI}/package.json`);
+      const metadata = require(`${mountURI}package.json`);
       console.log("load metadata", metadata);
       const isNative = true;
       const options = {};
@@ -181,7 +185,7 @@ Bootstrap.prototype = {
       });
       this.loader = loader;
 
-      const module = Module("package.json", `${baseURI}/package.json`);
+      const module = Module("package.json", `${baseURI}package.json`);
 
       const { startup } = Require(loader, module)("sdk/addon/runner")
       startup(reason, {

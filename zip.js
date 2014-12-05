@@ -1,6 +1,7 @@
 "use strict";
 
 const {Cc, Ci, Cr} = require("chrome");
+const {dirname} = require("sdk/fs/path");
 
 const PR_RDONLY      = 0x01;
 const PR_WRONLY      = 0x02;
@@ -27,6 +28,10 @@ const makeFile = path => {
   }
 
   return file;
+}
+
+const ensureDirectories = (zip, path) => {
+  zip.addEntryDirectory(path, null, true);
 }
 
 
@@ -80,6 +85,7 @@ exports.ZipEntry = ZipEntry;
 
 const EntryRemoval = function() {}
 EntryRemoval.prototype = Object.assign(new ZipEntry(), {
+  constructor: EntryRemoval,
   [ZipWriter.updateZipEntry](path, zip) {
     zip.removeEntry(path, true)
   }
@@ -87,10 +93,12 @@ EntryRemoval.prototype = Object.assign(new ZipEntry(), {
 ZipWriter.EntryRemoval = EntryRemoval;
 exports.EntryRemoval = EntryRemoval;
 
+
 const StringDataEntry = function(data) {
   this.data = data
 }
 StringDataEntry.prototype = Object.assign(new ZipEntry(), {
+  constructor: StringDataEntry,
   [ZipWriter.updateZipEntry](path, zip) {
     zip.addEntryStream(path, 0,
                        Ci.nsIZipWriter.COMPRESSION_DEFAULT,
@@ -100,3 +108,19 @@ StringDataEntry.prototype = Object.assign(new ZipEntry(), {
 });
 ZipWriter.StringDataEntry = StringDataEntry;
 exports.StringDataEntry = StringDataEntry;
+
+const FileEntry = function(path) {
+  this.path = path
+}
+FileEntry.prototype = Object.assign(new ZipEntry(), {
+  constructor: FileEntry,
+  [ZipWriter.updateZipEntry](path, zip) {
+    zip.addEntryFile(path,
+                     Ci.nsIZipWriter.COMPRESSION_DEFAULT,
+                     makeFile(this.path),
+                     true);
+  }
+});
+ZipWriter.FileEntry = FileEntry;
+exports.FileEntry = FileEntry;
+
