@@ -1,7 +1,7 @@
 const { Cc, Ci } = require("chrome");
 const { OS: {File}} = require("resource://gre/modules/osfile.jsm");
 const { Task } = require("resource://gre/modules/Task.jsm");
-const { Conversion, Status } = require("dev/gcli");
+const { Conversion, Status } = require("./dev/gcli");
 const { fromFilename: toFileURI } = require("sdk/url");
 const { ZipWriter } = require("./zip");
 const { readManifest } = require("./rdf");
