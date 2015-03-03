@@ -1,8 +1,8 @@
 "use strict";
 
 const gcli = require("./dev/gcli");
-const { ExistingDirectoryPath, mountAddon,
+const { Addon, ExistingDirectoryPath, mountAddon,
         reloadAddon, exportAddon } = require("./core");
 
-gcli.uninstall(ExistingDirectoryPath, mountAddon, reloadAddon, exportAddon);
-gcli.install(ExistingDirectoryPath, mountAddon, reloadAddon, exportAddon);
+gcli.uninstall(Addon, ExistingDirectoryPath, mountAddon, reloadAddon, exportAddon);
+gcli.install(Addon, ExistingDirectoryPath, mountAddon, reloadAddon, exportAddon);
