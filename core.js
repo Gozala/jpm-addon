@@ -9,7 +9,7 @@ const { writeBootstrap } = require("./util");
 const { read, remove, isDirectory, exists, list, listTree, uriToPath } = require("./io");
 const { TextDecoder } = require("sdk/io/buffer");
 const { tmpdir } = require("node/os");
-const { install, disable, enable } = require("sdk/addon/installer");
+const { uninstall, install, disable, enable } = require("sdk/addon/installer");
 const { set, get } = require("sdk/preferences/service");
 
 
@@ -107,6 +107,30 @@ const ExistingDirectoryPath = {
   }
 }
 exports.ExistingDirectoryPath = ExistingDirectoryPath
+
+const installAddon = {
+    name: "addon install",
+    description: "Install add-on xpi",
+    params: [{name: "addon_xpi",
+              type: "string",
+              description: "Add-on to install by add-on xpi"}],
+    exec: ({addon_xpi}) => {
+        return install(addon_xpi);
+    }
+};
+exports.installAddon = installAddon;
+
+const uninstallAddon = {
+    name: "addon uninstall",
+    description: "Install add-on",
+    params: [{name: "addon",
+              type: "Addon",
+              description: "Add-on to uninstall by add-on id"}],
+    exec: ({addon_id}) => {
+        return uninstall(addon_id);
+    }
+};
+exports.uninstallAddon = uninstallAddon;
 
 const mountAddon = {
   name: "addon mount",

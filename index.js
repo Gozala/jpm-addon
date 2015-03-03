@@ -2,7 +2,9 @@
 
 const gcli = require("./dev/gcli");
 const { Addon, ExistingDirectoryPath, mountAddon,
-        reloadAddon, exportAddon } = require("./core");
+        reloadAddon, exportAddon, installAddon, uninstallAddon } = require("./core");
 
-gcli.uninstall(Addon, ExistingDirectoryPath, mountAddon, reloadAddon, exportAddon);
-gcli.install(Addon, ExistingDirectoryPath, mountAddon, reloadAddon, exportAddon);
+gcli.uninstall(Addon, ExistingDirectoryPath,
+               mountAddon, reloadAddon, exportAddon, installAddon, uninstallAddon);
+gcli.install(Addon, ExistingDirectoryPath,
+             mountAddon, reloadAddon, exportAddon, installAddon, uninstallAddon);
