@@ -3,8 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-const readID = require("./node_modules/jetpack-id/index");
-const {parse: readVersion} = require("./node_modules/mozilla-toolkit-versioning/index");
+const readID = require("jetpack-id/index");
+const {parse: readVersion} = require("mozilla-toolkit-versioning/index");
 const { ids: GUIDS } = require("./settings");
 const { MIN_VERSION } = require("./settings");
 const MAX_VERSION = "*";
