@@ -144,19 +144,14 @@ const mountAddon = {
             type: "ExistingDirectoryPath",
             description: "Path to an add-on directory"}],
   exec: ({path: root}, context) => {
-    console.log("mount", root)
     let mountURI = toFileURI(root)
-    console.log("mount", mountURI)
     return Task.spawn(function*() {
       const manifestData = yield read(path.join(root, "package.json"));
       const decoder = new TextDecoder();
       const manifest = JSON.parse(decoder.decode(manifestData));
-      console.log(manifest)
       const rdf = readManifest(manifest);
-      console.log(rdf)
       const bootstrap = writeBootstrap(mountURI, manifest);
       const xpiPath = `${tmpdir()}/${manifest.name}.xpi`
-      console.log(bootstrap)
       const zip = new ZipWriter({
         "bootstrap.js": new ZipWriter.StringDataEntry(bootstrap),
         "install.rdf": new ZipWriter.StringDataEntry(rdf)
@@ -206,9 +201,7 @@ const exportAddon = {
         const manifestData = yield read(path.join(root, "package.json"));
         const decoder = new TextDecoder();
         const manifest = JSON.parse(decoder.decode(manifestData));
-        console.log(manifest)
         const rdf = readManifest(manifest);
-        console.log(rdf)
         const bootstrap = writeBootstrap(null, manifest);
         const xpiPath = `${targetPath}/${manifest.name}.xpi`
 
@@ -222,7 +215,6 @@ const exportAddon = {
           content[`src/${path.relative(root, entry)}`] = new ZipWriter.FileEntry(entry);
         }
 
-        console.log(content);
         const zip = new ZipWriter(content);
         yield zip.write(xpiPath);
       } else {
