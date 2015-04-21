@@ -164,6 +164,8 @@ const mountAddon = {
       yield zip.write(xpiPath);
       yield install(xpiPath);
       yield remove(xpiPath);
+
+      set(`extensions.${manifest.id}.mountURI`, mountURI);
     });
   }
 };
@@ -207,7 +209,7 @@ const exportAddon = {
         console.log(manifest)
         const rdf = readManifest(manifest);
         console.log(rdf)
-        const bootstrap = writeBootstrap("", manifest);
+        const bootstrap = writeBootstrap(null, manifest);
         const xpiPath = `${targetPath}/${manifest.name}.xpi`
 
         const content = {
