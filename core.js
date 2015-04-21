@@ -11,45 +11,49 @@ const { TextDecoder } = require("sdk/io/buffer");
 const { tmpdir } = require("node/os");
 const { uninstall, install, disable, enable } = require("sdk/addon/installer");
 const { set, get } = require("sdk/preferences/service");
-
-
+const { AddonManager } = require("resource://gre/modules/AddonManager.jsm");
 const path = require("sdk/fs/path");
 
-const { AddonManager } = require("resource://gre/modules/AddonManager.jsm");
-
 function getAllAddons() {
-    return new Promise((resolve, reject) => {
-        AddonManager.getAllAddons(resolve);
-    })
+  return new Promise((resolve, reject) => {
+    AddonManager.getAllAddons(resolve);
+  })
 }
 
 const Addon = {
-    name: "Addon",
-    parent: "string",
-    parse(arg) {
-        let {text:input} = arg;
-
-        return Task.spawn(function*() {
-            let addons = yield getAllAddons();
-            let predictions = addons.map((addon) => {
-                if (addon.id.match(input)) {
-                    return { name: addon.id, incomplete: addon.id !== input }
-                }
-            });
-
-            return new Conversion(input, arg, Status.VALID, "", predictions);
-        });
-    }
+  name: "Addon",
+  parent: "selection",
+  stringifyProperty: "name",
+  cacheable: true,
+  onInstalled(addon) {
+    this.clearCache();
+  },
+  onUninstalled(addon) {
+    this.clearCache();
+  },
+  constructor() {
+    // Tell GCLI to clear the cache of addons when one is added or removed
+    AddonManager.addAddonListener(this);
+  },
+  lookup() {
+    return getAllAddons().then(addons => {
+      return addons.map(addon => {
+        let name = addon.name + " " + addon.version;
+        name = name.trim().replace(/\s/g, "_");
+        return {name: name,
+                id: addon.id,
+                value: addon};
+      });
+    });
+  }
 };
-
 exports.Addon = Addon;
 
 const ExistingDirectoryPath = {
   name: "ExistingDirectoryPath",
   parent: "string",
   parse(arg) {
-    let {text:input} = arg;
-
+    const {text:input} = arg;
     return Task.spawn(function*() {
       if ((yield exists(input)) &&
           (yield isDirectory(input)))
@@ -108,6 +112,7 @@ const ExistingDirectoryPath = {
 }
 exports.ExistingDirectoryPath = ExistingDirectoryPath
 
+
 const installAddon = {
     name: "addon install",
     description: "Install add-on xpi",
@@ -126,8 +131,8 @@ const uninstallAddon = {
     params: [{name: "addon",
               type: "Addon",
               description: "Add-on to uninstall by add-on id"}],
-    exec: ({addon_id}) => {
-        return uninstall(addon_id);
+    exec: ({addon}) => {
+        return uninstall(addon.id);
     }
 };
 exports.uninstallAddon = uninstallAddon;
@@ -167,16 +172,16 @@ exports.mountAddon = mountAddon;
 const reloadAddon = {
   name: "addon reload",
   description: "Reload add-on",
-  params: [{name: "addon_id",
+  params: [{name: "addon",
             type: "Addon",
             description: "Add-on to reloaded by addon id"}],
-  exec: ({addon_id}) => {
-    return disable(addon_id).then(_ => {
+  exec: ({addon}) => {
+    return disable(addon.id).then(_ => {
       Cc["@mozilla.org/observer-service;1"].
         getService(Ci.nsIObserverService).
         notifyObservers({}, "startupcache-invalidate", null);
 
-      return enable(addon_id);
+      return enable(addon.id);
     });
   }
 };
@@ -185,15 +190,15 @@ exports.reloadAddon = reloadAddon;
 const exportAddon = {
   name: "addon export",
   description: "Export an add-on as an xpi",
-  params: [{name: "addon_id",
+  params: [{name: "addon",
             type: "Addon",
             description: "Mounted add-on to export"},
            {name: "path",
             type: "ExistingDirectoryPath",
             description: "Path to export add-on to"}],
-  exec({addon_id, path: targetPath}) {
+  exec({addon, path: targetPath}) {
     return Task.spawn(function*() {
-      const mountURI = get(`extensions.${addon_id}.mountURI`)
+      const mountURI = get(`extensions.${addon.id}.mountURI`)
       if (mountURI) {
         const root = uriToPath(mountURI);
         const manifestData = yield read(path.join(root, "package.json"));
