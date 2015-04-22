@@ -17,13 +17,14 @@ const { tmpdir } = require("node/os");
 const { uninstall, install, disable, enable } = require("sdk/addon/installer");
 const { set, get } = require("sdk/preferences/service");
 const { AddonManager } = require("resource://gre/modules/AddonManager.jsm");
+const readID = require("jetpack-id/index");
 const path = require("sdk/fs/path");
 
 function getAllAddons() {
   return new Promise((resolve, reject) => {
     AddonManager.getAllAddons(resolve);
-  })
-}
+  });
+};
 
 const Addon = {
   name: "Addon",
@@ -119,26 +120,26 @@ exports.ExistingDirectoryPath = ExistingDirectoryPath
 
 
 const installAddon = {
-    name: "addon install",
-    description: "Install add-on xpi",
-    params: [{name: "addon_xpi",
-              type: "string",
-              description: "Add-on to install by add-on xpi"}],
-    exec: ({addon_xpi}) => {
-        return install(addon_xpi);
-    }
+  name: "addon install",
+  description: "Install add-on xpi",
+  params: [{name: "addon_xpi",
+            type: "string",
+            description: "Add-on to install by add-on xpi"}],
+  exec: ({addon_xpi}) => {
+    return install(addon_xpi)
+  }
 };
 exports.installAddon = installAddon;
 
 const uninstallAddon = {
-    name: "addon uninstall",
-    description: "Install add-on",
-    params: [{name: "addon",
-              type: "Addon",
-              description: "Add-on to uninstall by add-on id"}],
-    exec: ({addon}) => {
-        return uninstall(addon.id);
-    }
+  name: "addon uninstall",
+  description: "Install add-on",
+  params: [{name: "addon",
+            type: "Addon",
+            description: "Add-on to uninstall by add-on id"}],
+  exec: ({addon}) => {
+    return uninstall(addon.id);
+  }
 };
 exports.uninstallAddon = uninstallAddon;
 
@@ -154,6 +155,7 @@ const mountAddon = {
       const manifestData = yield read(path.join(root, "package.json"));
       const decoder = new TextDecoder();
       const manifest = JSON.parse(decoder.decode(manifestData));
+      const id = readID(manifest);
       const rdf = readManifest(manifest);
       const bootstrap = writeBootstrap(mountURI, manifest);
       const xpiPath = `${tmpdir()}/${manifest.name}.xpi`
@@ -165,7 +167,9 @@ const mountAddon = {
       yield install(xpiPath);
       yield remove(xpiPath);
 
-      set(`extensions.${manifest.id}.mountURI`, mountURI);
+      set(`extensions.${id}.mountURI`, mountURI);
+
+      return id;
     });
   }
 };
