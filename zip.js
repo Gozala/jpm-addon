@@ -47,7 +47,6 @@ ZipWriter.prototype = {
       let zip = Cc["@mozilla.org/zipwriter;1"].
         createInstance(Ci.nsIZipWriter);
 
-      console.log(path, mode);
       zip.open(makeFile(path), mode);
 
       for (let path of Object.keys(this.content)) {
