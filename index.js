@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-const gcli = require("./dev/gcli");
+const gcli = require("dev/gcli");
 const { Addon, ExistingDirectoryPath, mountAddon,
         reloadAddon, exportAddon, installAddon, uninstallAddon } = require("./core");
 
